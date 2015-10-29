@@ -29,3 +29,5 @@
 
 #Other shit
 *.sdf
+#Ommit Release (Binaries) Estos se generan automaticamente y no necesitamos compararlos
+Release/
