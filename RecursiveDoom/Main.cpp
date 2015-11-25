@@ -3,15 +3,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <math.h>
 #define N 15
 
 /* Global variables */
 char title[] = "3D Shapes";
-float rotationDelta = 0.0f;
+float rotationDelta = 1.0f;
+float acercamiento = 17;
 float currentRotation = 0;
 int mH[N][N - 1];
 int mV[N - 1][N];
-
+#define PI 2*acos(0.0f)
+float angle = 0.0f, angle2 = 0.0f;
 
 
 /* Initialize OpenGL Graphics */
@@ -19,9 +22,13 @@ void MyKeyBoardFunc(unsigned char Key, int x, int y)
 {
 	switch (Key)
 	{
-	case 'a': rotationDelta -= 0.1f; break;
-	case 'd': rotationDelta += 0.1f; break;
-	case 's': rotationDelta = 0; break;
+	case 'a': rotationDelta += 0.1f; break;//desde -18 15
+	case 'd': rotationDelta -= 0.1f; break;
+	case 'r': rotationDelta = 0; break;
+	case 'z': angle += 0.1f; break;//17
+	case 'x': angle -= 0.1f; break;
+	case 'q': angle2 += 0.1f; break;//17
+	case 'e': angle2 -= 0.1f; break;
 	};
 
 
@@ -42,8 +49,8 @@ void RecursiveDivision(int i0, int i1, int j0, int j1)//Ingreso de Filas y colum
 
 	int h = i1 - i0; int w = j1 - j0; //h: height, w: width
 	int opt;
-	if (h > w) { opt = 0; } //Si h > w se hará un corte Horizontal
-	else if (w > h) { opt = 1; }//Sino w < h se hará un corte Vertical
+	if (h > w) { opt = 0; } //Si h > w se harÃ¡ un corte Horizontal
+	else if (w > h) { opt = 1; }//Sino w < h se harÃ¡ un corte Vertical
 	else opt = rand() % 2;//Otro, si w == h entonces de hace un corte aleatorio V o H
 
 	int ic, jc; //Fila de corte, columna de corte
@@ -179,34 +186,25 @@ void FigurasPrimitivas()
 	glEnd();   // Done drawing the pyramid
 }
 
+bool derecha = false;
 void Laberinto()
 {
-	for (int i = 0; i < N - 1; i++)
+	if (rotationDelta<-18 && !derecha)
 	{
-		for (int j = 0; j < N; j++)
-		{
-			if (mV[i][j] == 0)continue;
-
-			glLoadIdentity();                 // Reset the model-view matrix
-			glTranslatef((-N + 1)*0.5f, (-N + 1)*0.5f, -N - 3);
-			glTranslatef(j, i, 0);
-			glBegin(GL_QUADS);
-
-			glColor3f(0.0f, 0.15f, 0.25f);
-			glVertex3f(0.0f, 0.0f, 0.0f);
-
-			//glColor3f(0.5f, 0, 0);
-			glVertex3f(0, 1, 0);
-			glColor3f(1.0f, 0.15f, 0.25f);
-			//glColor3f(0.5f, 0, 0);
-			glVertex3f(0, 1, 1);
-
-			//glColor3f(0.5f, 1, 0);
-			glVertex3f(0, 0, 1);
-			//glPopMatrix();
-			glEnd();
-		}
+		derecha = true;
+	
 	}
+	else if (rotationDelta > 15 && derecha){
+		derecha = false;
+	}
+	if (derecha){
+		rotationDelta += .018f;
+	}
+	else{
+		rotationDelta -= .018f;
+	}
+	
+
 	for (int i = 0; i < N; i++)
 	{
 		for (int j = 0; j < N - 1; j++)
@@ -216,8 +214,9 @@ void Laberinto()
 			glLoadIdentity();                 // Reset the model-view matrix
 			//glPushMatrix();
 			//glRotatef(-30, 1, 0, 0);
-			glTranslatef((-N + 1)*0.5f, (-N + 1)*0.5f, -N - 3);
-			glTranslatef(j, i, 0);
+			glTranslatef((-N + 1)*0.5f + 0, (-N + 1)*0.5f + 0, -N - 3 + acercamiento);
+			glTranslatef(j, i, 0 + 0);
+			
 			glBegin(GL_QUADS);
 
 			glColor3f(0.0f, 0.3f, 0.45f);
@@ -237,6 +236,33 @@ void Laberinto()
 			glEnd();
 		}
 	}
+	for (int i = 0; i < N - 1; i++)
+	{
+		for (int j = 0; j < N; j++)
+		{
+			if (mV[i][j] == 0)continue;
+
+			glLoadIdentity();                 // Reset the model-view matrix
+			glTranslatef((-N + 1)*0.5f, (-N + 1)*0.5f, -N - 3 + acercamiento);
+			glTranslatef(j, i, 0);
+			glBegin(GL_QUADS);
+
+			glColor3f(0.0f, 0.15f, 0.25f);
+			glVertex3f(0.0f, 0.0f, 0.0f);
+
+			//glColor3f(0.5f, 0, 0);
+			glVertex3f(0, 1, 0);
+			glColor3f(1.0f, 0.15f, 0.25f);
+			//glColor3f(0.5f, 0, 0);
+			glVertex3f(0, 1, 1);
+
+			//glColor3f(0.5f, 1, 0);
+			glVertex3f(0, 0, 1);
+			//glPopMatrix();
+			glEnd();
+		}
+	}
+
 }
 
 void Plataforma()
@@ -244,7 +270,7 @@ void Plataforma()
 	glLoadIdentity();                 // Reset the model-view matrix
 	//glPushMatrix();
 	//glRotatef(-30, 1, 0, 0);
-	glTranslatef((-N + 1)*0.5f, (-N + 1)*0.5f, -N - 3);
+	glTranslatef((-N + 1)*0.5f, (-N + 1)*0.5f, -N - 3+acercamiento);
 	glBegin(GL_QUADS);
 
 	glColor3f(0.0f, 0.25f, 0.35f);
@@ -267,7 +293,22 @@ void Plataforma()
 void display() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear color and depth buffers
 	glClearColor(0.0f, 0.2f, 0.3f, 0);
-	glMatrixMode(GL_MODELVIEW);     // To operate on model-view matrix
+
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluPerspective(50.0, 1.0, 0.0, 1000.0);
+	//rotationDelta
+	gluLookAt(N*sin(0.5f*PI*angle)+rotationDelta, N*cos(0.5f*PI*angle)+rotationDelta , 1.0,
+		0, 0, 0,
+		0.0, 1, 0);
+	glMatrixMode(GL_MODELVIEW);
+	//glLoadIdentity();
+	
+
+
+
+	
 	Plataforma();
 	// Render a color-cube consisting of 6 quads with different colors
 
@@ -358,7 +399,7 @@ int main(int argc, char** argv) {
 	glutInitWindowPosition(50, 50); // Position the window's initial top-left corner
 	glutCreateWindow(title);          // Create window with the given title
 	glutDisplayFunc(display);       // Register callback handler for window re-paint event
-	glutReshapeFunc(reshape);       // Register callback handler for window re-size event
+	//glutReshapeFunc(reshape);       // Register callback handler for window re-size event
 	initGL();                       // Our own OpenGL initialization	
 	glutMainLoop();                 // Enter the infinite event-processing loop
 	return 0;
